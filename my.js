@@ -1,120 +1,133 @@
-// Debounce function for scroll event
-function debounce(func, wait) {
-  let timeout;
-  return function executedFunction(...args) {
-    const later = () => {
-      clearTimeout(timeout);
-      func(...args);
-    };
-    clearTimeout(timeout);
-    timeout = setTimeout(later, wait);
-  };
-}
-
-// Progress bar Effect
+/* Progress bar Effect */
 const navbar = document.querySelector(".navbar");
 const navbarOffsetTop = navbar.offsetTop;
+const sections = document.querySelectorAll("section");
 const navbarLinks = document.querySelectorAll(".navbar-link");
-const sections = Array.from(document.querySelectorAll("section"));
 const progress = document.querySelector(".progress-bars-wrapper");
 const progressBarPercents = [97, 90, 82, 60, 48];
 
-// Debounced main function for scroll event
-const debouncedMainFn = debounce(() => {
-  const scrollPosition = window.pageYOffset;
-
-  // Update navbar sticky class
-  if (scrollPosition >= navbarOffsetTop) {
-    navbar.classList.add("sticky");
-  } else {
-    navbar.classList.remove("sticky");
-  }
-
-  // Update active section in navbar
-  let currentSectionIndex = sections.findIndex((section) => {
-    return scrollPosition >= section.offsetTop - 10 && scrollPosition < section.offsetTop + section.offsetHeight;
-  });
-
-  if (currentSectionIndex === -1) {
-    currentSectionIndex = sections.length - 1; // Fallback to last section if no other section is active
-  }
-
-  navbarLinks.forEach((navbarLink, index) => {
-    if (index === currentSectionIndex) {
-      navbarLink.classList.add("change");
-    } else {
-      navbarLink.classList.remove("change");
-    }
-  });
-
-  // Update progress bar
-  if (scrollPosition + window.innerHeight >= progress.offsetTop) {
-    document.querySelectorAll(".progress-percent").forEach((el, i) => {
-      el.style.width = `${progressBarPercents[i]}%`;
-      el.previousElementSibling.firstElementChild.textContent =
-        progressBarPercents[i];
-    });
-  }
-}, 100); // Adjust debounce delay as needed
-
-window.addEventListener("scroll", debouncedMainFn);
-
-// Theme toggle
-const themeToggle = document.getElementById('theme-toggle');
-const body = document.body;
-themeToggle.addEventListener('click', () => {
-  body.classList.toggle('dark-mode');
+window.addEventListener("scroll", () => {
+  mainFn();
 });
 
-// Typing and Deleting Effect
-const _CONTENT = ["FRONT-END DEVELOPER", "CAD DESIGNER", "UI DESIGNER"];
-let _PART = 0;
-let _PART_INDEX = 0;
-const _ELEMENT = document.querySelector("#text-name");
-const _CURSOR = document.querySelector("#cursor");
+const mainFn = () => {
+	
+		if (window.pageYOffset >= navbarOffsetTop) {
+		  navbar.classList.add("sticky");
+		} else {
+		  navbar.classList.remove("sticky");
+		}
+	  
+		sections.forEach((section, i) => {
+		  if (window.pageYOffset >= section.offsetTop - 10) {
+			navbarLinks.forEach((navbarLink) => {
+			  navbarLink.classList.remove("change");
+			});
+			navbarLinks[i].classList.add("change");
+		  }
+		});
+	  
+		if (window.pageYOffset + window.innerHeight >= progress.offsetTop) {
+		  document.querySelectorAll(".progress-percent").forEach((el, i) => {
+			el.style.width = `${progressBarPercents[i]}%`;
+			el.previousElementSibling.firstElementChild.textContent =
+			  progressBarPercents[i];
+		  });
+		}
+	  };
 
-function Type() {
-  const text = _CONTENT[_PART].substring(0, _PART_INDEX + 1);
-  _ELEMENT.innerHTML = text;
-  _PART_INDEX++;
-  if (text === _CONTENT[_PART]) {
-    _CURSOR.style.display = 'none';
-    clearInterval(_INTERVAL_VAL);
-    setTimeout(() => {
-      _INTERVAL_VAL = setInterval(Delete, 50);
-    }, 1000);
-  }
+
+mainFn();
+
+/* Typing and Deleting Effect */
+// ... (rest of the typing and deleting effect code remains the same)
+var _CONTENT = [  
+	"FRONT-END DEVELOPER",
+    "CAD DESIGNER", 
+	"UI DESIGNER"
+];
+
+var _PART = 0; // Current sentence being processed
+var _PART_INDEX = 0; // Character number of the current sentence being processed 
+var _INTERVAL_VAL; // Holds the handle returned from setInterval
+var _ELEMENT = document.querySelector("#text-name"); // Element that holds the text
+var _CURSOR = document.querySelector("#cursor"); // Cursor element 
+
+// Implements typing effect
+function Type() { 
+	// Get substring with 1 characater added
+	var text =  _CONTENT[_PART].substring(0, _PART_INDEX + 1);
+	_ELEMENT.innerHTML = text;
+	_PART_INDEX++;
+
+	// If full sentence has been displayed then start to delete the sentence after some time
+	if(text === _CONTENT[_PART]) {
+		// Hide the cursor
+		_CURSOR.style.display = 'none';
+
+		clearInterval(_INTERVAL_VAL);
+		setTimeout(function() {
+			_INTERVAL_VAL = setInterval(Delete, 50);
+		}, 1000);
+	}
 }
 
+// Implements deleting effect
 function Delete() {
-  const text = _CONTENT[_PART].substring(0, _PART_INDEX - 1);
-  _ELEMENT.innerHTML = text;
-  _PART_INDEX--;
-  if (text === '') {
-    clearInterval(_INTERVAL_VAL);
-    _PART = (_PART == (_CONTENT.length - 1)) ? 0 : _PART + 1;
-    _PART_INDEX = 0;
-    setTimeout(() => {
-      _CURSOR.style.display = 'inline-block';
-      _INTERVAL_VAL = setInterval(Type, 100);
-    }, 200);
-  }
+	// Get substring with 1 characater deleted
+	var text =  _CONTENT[_PART].substring(0, _PART_INDEX - 1);
+	_ELEMENT.innerHTML = text;
+	_PART_INDEX--;
+
+	// If sentence has been deleted then start to display the next sentence
+	if(text === '') {
+		clearInterval(_INTERVAL_VAL);
+
+		// If current sentence was last then display the first one, else move to the next
+		if(_PART == (_CONTENT.length - 1))
+			_PART = 0;
+		else
+			_PART++;
+		_PART_INDEX = 0;
+
+		// Start to display the next sentence after some time
+		setTimeout(function() {
+			_CURSOR.style.display = 'inline-block';
+			_INTERVAL_VAL = setInterval(Type, 100);
+		}, 200);
+	}
 }
+// Start the typing effect on load
+_INTERVAL_VAL = setInterval(Type, 100);
+// switching themes
 
-let _INTERVAL_VAL = setInterval(Type, 100);
 
-// Lazy loading (example with images)
-document.addEventListener("DOMContentLoaded", () => {
-  const lazyImages = document.querySelectorAll('img.lazy');
-  const lazyLoad = () => {
-    lazyImages.forEach(img => {
-      if (img.offsetTop < window.innerHeight + window.pageYOffset) {
-        img.src = img.dataset.src;
-        img.classList.remove('lazy');
+document.addEventListener("DOMContentLoaded", function() {
+  // ... (rest of the theme preference code remains the same)
+  const themeToggleBtn = document.querySelector('.theme-toggle-btn');
+	const body = document.body;
+  
+	themeToggleBtn.addEventListener('click', function() {
+	  // Toggle dark mode class on the body
+	  body.classList.toggle('dark-mode');
+  
+	  // Save the user's theme preference to localStorage
+	  const isDarkMode = body.classList.contains('dark-mode');
+	  localStorage.setItem('darkMode', isDarkMode);
+	});
+  
+	// Check user's theme preference from localStorage
+	const isDarkMode = localStorage.getItem('darkMode') === 'true';
+	if (isDarkMode) {
+	  body.classList.add('dark-mode');
+	}
+  });
+
+  const modeToggle = document.getElementById('modeToggle');
+    modeToggle.addEventListener('change', function() {
+      if (this.checked) {
+        document.body.classList.add('dark-mode');
+      } else {
+        document.body.classList.remove('dark-mode');
       }
     });
-  };
-  window.addEventListener('scroll', lazyLoad);
-  window.addEventListener('resize', lazyLoad);
-  lazyLoad();
-});
